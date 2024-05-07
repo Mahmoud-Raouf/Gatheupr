@@ -61,7 +61,7 @@ class _EventFavDetailState extends State<EventFavDetail> {
           String id = snapshot.data?.id ?? ''; // الـ ID الخاص بالمستند
           String title = place?['title'] ?? ''; // العنوان
           String notes = place?['notes'] ?? ''; // العنوان
-          String address = place?['location'] ?? ''; // العنوان
+          String address = place?['address'] ?? ''; // العنوان
           String description = place?['description'] ?? ''; // الوصف الثاني
 
           String ticketPrice = place?['ticketPrice'] ?? ''; //
@@ -85,7 +85,7 @@ class _EventFavDetailState extends State<EventFavDetail> {
 
           String totalTicketsAvailable = place?['totalTicketsAvailable'] ?? ''; // الوصف الثاني
           List<Map<String, String>> images = [
-            {'picture': place?['picture'] ?? ''},
+            {'picture': place?['imageUrl'] ?? ''},
             // {'image': place?['subImage2'] ?? ''},
             // {'image': place?['subImage3'] ?? ''},
             // {'image': place?['subImage4'] ?? ''},
