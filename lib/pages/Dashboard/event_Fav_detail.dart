@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gatheuprksa/util/constants.dart';
 import 'package:gatheuprksa/widgets/_appbar.dart';
 import 'package:gatheuprksa/widgets/no_appbar.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer/sizer.dart';
@@ -34,10 +35,6 @@ class _EventFavDetailState extends State<EventFavDetail> {
   @override
   void initState() {
     super.initState();
-    print("documentId ::::::::::::::::::::::: ${widget.documentId}");
-    print("citiesdocumentId ::::::::::::::::::::::: ${widget.citiesdocumentId}");
-    print("documentDetailId ::::::::::::::::::::::: ${widget.documentDetailId}");
-    print("userId ::::::::::::::::::::::: ${widget.userId}");
   }
 
   @override
@@ -58,9 +55,7 @@ class _EventFavDetailState extends State<EventFavDetail> {
             .snapshots(),
         builder: (context, snapshot) {
           var place = snapshot.data?.data() as Map<String, dynamic>?; // البيانات من Firestore
-          String id = snapshot.data?.id ?? ''; // الـ ID الخاص بالمستند
           String title = place?['title'] ?? ''; // العنوان
-          String notes = place?['notes'] ?? ''; // العنوان
           String address = place?['address'] ?? ''; // العنوان
           String description = place?['description'] ?? ''; // الوصف الثاني
 
@@ -83,9 +78,9 @@ class _EventFavDetailState extends State<EventFavDetail> {
           DateFormat formatter2 = DateFormat.yMd().add_jm();
           String endingDate = formatter2.format(now2);
 
-          String totalTicketsAvailable = place?['totalTicketsAvailable'] ?? ''; // الوصف الثاني
+          int totalTicketsAvailable = place?['totalTicketsAvailable'] ?? ''; // الوصف الثاني
           List<Map<String, String>> images = [
-            {'picture': place?['imageUrl'] ?? ''},
+            {'picture': place?['imageUrl'] ?? 'https://www.gothamindustries.com/images/image-not-available.png'},
             // {'image': place?['subImage2'] ?? ''},
             // {'image': place?['subImage3'] ?? ''},
             // {'image': place?['subImage4'] ?? ''},
@@ -103,39 +98,11 @@ class _EventFavDetailState extends State<EventFavDetail> {
                       space: Constant.SIZE15,
                       leftPadding: 15,
                       bottomPadding: 10,
-                      onTap: () {},
+                      onTap: () {
+                        Get.back();
+                      },
                     ),
                     const Spacer(),
-                    InkWell(
-                      onTap: () {
-                        String imageUrl = place?['picture'] ?? '';
-
-                        FirebaseFirestore.instance
-                            .collection('usersFav')
-                            .doc(widget.userId)
-                            .collection('favorites')
-                            .doc(widget.documentId)
-                            .set({
-                          // يمكنك إضافة المزيد من البيانات إذا كنت بحاجة إليها، مثل اسم الوثيقة أو أي بيانات أخرى.
-                          'favCitiesDocumentId': widget.documentId,
-                          'favDocumentId': id,
-                          'picture': imageUrl,
-                          'title': title,
-                          'address': address,
-                          'description': description,
-                          'notes': notes,
-                          'ticketPrice': ticketPrice,
-                          'startingDate': startingDate,
-                          'endingDate': endingDate,
-                          'timestamp': FieldValue.serverTimestamp(),
-                        });
-                      },
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 20.sp,
-                      ),
-                    ),
-                    const SizedBox(width: 10.0),
                     InkWell(
                       onTap: () {
                         Share.share(
