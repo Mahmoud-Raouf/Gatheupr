@@ -488,12 +488,16 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.only(bottom: 300),
               child: Column(
                 children: [
-                  CustomText(
-                    title: "التذاكر الخاصة بك ", // نص العنصر
-                    color: const Color.fromARGB(255, 92, 92, 92), // لون النص
-                    fontfamily: Strings.emptyString, // خط النص
-                    fontWight: FontWeight.w800, // وزن الخط
-                    fontSize: 20, // حجم الخط يعتمد على طول النص
+                  CustomAppBar(
+                    title: " التذاكر الخاصة بك",
+                    space: Constant.SIZE15,
+                    leftPadding: 15,
+                    bottomPadding: 10,
+                    onTap: () {
+                      // تحديث حالة التطبيق عند النقر على شريط العنوان
+                      homeController.index = Constant.INT_ONE;
+                      homeController.update();
+                    },
                   ),
                   SizedBox(
                     height: height * Constant.searchBodyHeight,
@@ -630,7 +634,17 @@ class _HomeState extends State<Home> {
                             },
                           );
                         } else {
-                          return const SizedBox(); // التعامل مع حالة عدم وجود بيانات
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 200.0),
+                            child: SizedBox(
+                              child: CustomText(
+                                title: 'ليس لديك تذاكر حتى الأن ',
+                                fontSize: 13.sp,
+                                color: Colors.black87,
+                                fontWight: FontWeight.w400,
+                              ),
+                            ),
+                          ); // التعامل مع حالة عدم وجود بيانات
                         }
                       },
                     ),
@@ -1035,7 +1049,17 @@ class _HomeState extends State<Home> {
                             },
                           );
                         } else {
-                          return const SizedBox(); // التعامل مع حالة عدم وجود بيانات
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 200.0),
+                            child: SizedBox(
+                              child: CustomText(
+                                title: 'لا يوجد فعاليات مفضلة حتى الأن ',
+                                fontSize: 13.sp,
+                                color: Colors.black87,
+                                fontWight: FontWeight.w400,
+                              ),
+                            ),
+                          ); // التعامل مع حالة عدم وجود بيانات
                         }
                       },
                     ),
@@ -1665,8 +1689,8 @@ class _HomeState extends State<Home> {
                     tappedIcon: tapStatistic),
               if (userRole == 'user')
                 navBarItem(
-                    title: Strings.favorite, index: Constant.INT_tickets, icon: taptickets, tappedIcon: taptickets),
-              navBarItem(title: Strings.tickets, index: Constant.INT_FAV, icon: favorite, tappedIcon: favorite),
+                    title: Strings.tickets, index: Constant.INT_tickets, icon: taptickets, tappedIcon: taptickets),
+              navBarItem(title: Strings.favorite, index: Constant.INT_FAV, icon: favorite, tappedIcon: favorite),
             ],
           ),
         ),
