@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gatheuprksa/pages/Signup/registration_type.dart';
@@ -11,6 +12,7 @@ import 'package:gatheuprksa/widgets/Custom_Textfield.dart';
 import 'package:gatheuprksa/widgets/Custombutton.dart';
 import 'package:gatheuprksa/widgets/app_logo.dart';
 import 'package:gatheuprksa/widgets/custom_text.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -43,7 +45,17 @@ class _LoginState extends State<Login> {
       // ثم قم بحفظه في SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("userId", userId);
+      CollectionReference signupNotifications = FirebaseFirestore.instance.collection('notifications');
 
+      DateTime now = DateTime.now();
+      DateFormat formatter = DateFormat.yMd().add_jm();
+      String currentTimestamp = formatter.format(now);
+      signupNotifications.add({
+        'userUid': userId,
+        'title': "تسجيل دخول",
+        'description': "مرحبًا بك في تطبيق Gatherup! لقد تم تسجيل دخولك بنجاح في تمام الساعه ال $currentTimestamp",
+        'time': currentTimestamp,
+      });
       // في حال نجاح تسجيل الدخول، قم بتوجيه المستخدم إلى الصفحة الرئيسية
       Navigator.push(
         context,

@@ -11,6 +11,7 @@ import 'package:gatheuprksa/widgets/Custombutton.dart';
 import 'package:gatheuprksa/widgets/_appbar.dart';
 import 'package:gatheuprksa/widgets/custom_text.dart';
 import 'package:gatheuprksa/widgets/no_appbar.dart';
+import 'package:intl/intl.dart';
 import '../../widgets/Custom_Textfield.dart';
 import 'signup_controller.dart';
 
@@ -77,7 +78,18 @@ class _SignUpState extends State<SignUp> {
           'role': widget.userRole,
           'address': _addressController.text,
         });
+        CollectionReference signupNotifications = FirebaseFirestore.instance.collection('notifications');
 
+        DateTime now = DateTime.now();
+        DateFormat formatter = DateFormat.yMd().add_jm();
+        String currentTimestamp = formatter.format(now);
+        signupNotifications.add({
+          'userUid': result.user?.uid,
+          'title': "رسالة ترحيب",
+          'description':
+              "مرحبًا بك في تطبيق Gatherup! يمكنك استكشاف الفعاليات في المملكة وشراء التذاكر ومشاركة رحلتك مع أصدقائك. نتمنى لك رحلة سعيدة!",
+          'time': currentTimestamp,
+        });
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const Home()),
@@ -93,20 +105,17 @@ class _SignUpState extends State<SignUp> {
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: AlertDialog(
-                title: const Text("Error"),
-                content: const Text("This email has been used before"),
-                actions: [
-                  TextButton(
-                    child: const Text("Close"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
+            return AlertDialog(
+              title: const Text("Error"),
+              content: const Text("This email has been used before"),
+              actions: [
+                TextButton(
+                  child: const Text("Close"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
             );
           },
         );
@@ -117,20 +126,17 @@ class _SignUpState extends State<SignUp> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return Directionality(
-            textDirection: TextDirection.rtl,
-            child: AlertDialog(
-              title: const Text("Error"),
-              content: Text(errorMessage),
-              actions: [
-                TextButton(
-                  child: const Text("Close"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
+          return AlertDialog(
+            title: const Text("Error"),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                child: const Text("Close"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           );
         },
       );

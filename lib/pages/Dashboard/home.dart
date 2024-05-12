@@ -85,6 +85,14 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void deleteDocument(String documentId) {
+    FirebaseFirestore.instance.collection('notifications').doc(documentId).delete().then((_) {
+      print("تم حذف الوثيقة بنجاح!");
+    }).catchError((error) {
+      print("حدث خطأ أثناء حذف الوثيقة: $error");
+    });
+  }
+
   Future<void> fetchDocument() async {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('cities')
@@ -130,7 +138,6 @@ class _HomeState extends State<Home> {
       // استخدم snapshot.data للوصول إلى قائمة الوثائق المفضلة
       for (var doc in snapshot.docs) {
         var favoriteDocumentId = doc.id;
-        print("favoriteDocumentId ::::::::::::::::::::::::::: $favoriteDocumentId");
       }
     });
   }
@@ -198,6 +205,8 @@ class _HomeState extends State<Home> {
                 return statisticsPlanedTile(); // عرض واجهة تفاصيل مكان
               case Constant.INT_tickets:
                 return userTickets(); // عرض واجهة تفاصيل مكان
+              case Constant.INT_UserNotification:
+                return userNotification(); // عرض واجهة تفاصيل مكان
 
               default:
                 return _home();
@@ -280,15 +289,33 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-                    CircleAvatar(
-                      radius: Constant.circleImageRadius, // نصف قطر الصورة الدائرية
-                      child: IconButton(
-                        icon: const Icon(Icons.exit_to_app), // أيقونة خروج
-                        onPressed: () {
-                          _signOut(context); // استدعاء دالة الخروج عند النقر
-                        },
-                      ),
-                    )
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: Constant.circleImageRadius, // نصف قطر الصورة الدائرية
+                          child: IconButton(
+                            icon: const Icon(Icons.exit_to_app), // أيقونة خروج
+                            onPressed: () {
+                              _signOut(context); // استدعاء دالة الخروج عند النقر
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        CircleAvatar(
+                          radius: Constant.circleImageRadius, // نصف قطر الصورة الدائرية
+                          child: IconButton(
+                            color: Colors.red,
+                            icon: const Icon(Icons.notification_important), // أيقونة خروج
+                            onPressed: () {
+                              homeController.index = Constant.INT_UserNotification;
+                              homeController.update();
+                            },
+                          ),
+                        )
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -639,6 +666,181 @@ class _HomeState extends State<Home> {
                             child: SizedBox(
                               child: CustomText(
                                 title: 'ليس لديك تذاكر حتى الأن ',
+                                fontSize: 13.sp,
+                                color: Colors.black87,
+                                fontWight: FontWeight.w400,
+                              ),
+                            ),
+                          ); // التعامل مع حالة عدم وجود بيانات
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 200,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  userNotification() {
+    return Scaffold(
+      appBar: NoAppBar(),
+      body: Padding(
+        padding: const EdgeInsets.only(
+          left: Constant.bookingTileLeftPadding,
+          right: Constant.bookingTileRightPadding,
+        ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: Constant.constantPadding(Constant.SIZE100 / 2),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 300),
+              child: Column(
+                children: [
+                  CustomAppBar(
+                    title: "الإشعارات",
+                    space: Constant.SIZE15,
+                    leftPadding: 15,
+                    bottomPadding: 10,
+                    onTap: () {
+                      // تحديث حالة التطبيق عند النقر على شريط العنوان
+                      homeController.index = Constant.INT_ONE;
+                      homeController.update();
+                    },
+                  ),
+                  SizedBox(
+                    height: height * Constant.searchBodyHeight,
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('notifications')
+                          .where('userUid', isEqualTo: userId)
+                          .snapshots(),
+                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+
+                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                          // عرض قائمة الأماكن السياحية
+                          return ListView.builder(
+                            padding: EdgeInsets.only(
+                              left: Constant.searchTileListLeftPadding,
+                              bottom: height * Constant.searchTileListBottomPadding,
+                              right: Constant.searchTileListRightPadding,
+                              top: Constant.searchTileListTopPadding,
+                            ),
+                            itemCount: snapshot.data!.docs.length,
+                            itemBuilder: (context, index) {
+                              DocumentSnapshot document = snapshot.data!.docs[index];
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              String title = data['title'] ?? '';
+                              String description = data['description'] ?? '';
+                              String time = data['time'] ?? '';
+                              String documentuid = document.id;
+
+                              return Stack(
+                                children: [
+                                  // تأثير زجاجي خلفي للعنصر
+                                  BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: Constant.blurSigmaX, sigmaY: Constant.blurSigmaY),
+                                  ),
+
+                                  InkWell(
+                                    onTap: () {
+                                      // إخفاء لوحة المفاتيح عند النقر على العنصر
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.all(Constant.searchTileMargin),
+                                      padding: const EdgeInsets.only(bottom: Constant.searchTileContentBottomPadding),
+                                      decoration: Constant.boxDecoration,
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // معلومات الأماكن السياحية
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 8.0),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                // عنوان الأماكن السياحية
+
+                                                CustomText(
+                                                  title: title,
+                                                  fontSize: Constant.searchTileTitleSize,
+                                                  color: AppTheme.colorblack,
+                                                  fontWight: FontWeight.w900,
+                                                ),
+
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: Constant.tripCardLocationPadding),
+                                                  child: SizedBox(
+                                                    width: width * 0.73,
+                                                    child: CustomText(
+                                                      title: description,
+                                                      fontSize: 10.sp,
+                                                      color: Colors.black87,
+                                                      height: 1.3,
+                                                      fontWight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: Constant.tripCardLocationPadding),
+                                                  child: SizedBox(
+                                                    width: width * 0.7,
+                                                    child: CustomText(
+                                                      title: 'وقت حجز التذكرة : $time',
+                                                      fontSize: 10.sp,
+                                                      color: Colors.black87,
+                                                      fontWight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 10.0),
+                                            child: IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () {
+                                                deleteDocument(document.id);
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 200.0),
+                            child: SizedBox(
+                              child: CustomText(
+                                title: 'ليس لديك إشعارات حتى الأن ',
                                 fontSize: 13.sp,
                                 color: Colors.black87,
                                 fontWight: FontWeight.w400,
@@ -1450,9 +1652,12 @@ class _HomeState extends State<Home> {
                                 String ticketId = generateRandomNumber(); // توليد رقم عشوائي لتذكرة
 
                                 CollectionReference mainTickets = FirebaseFirestore.instance.collection('tickets');
+                                CollectionReference ticketNotifications =
+                                    FirebaseFirestore.instance.collection('notifications');
 
                                 DateTime now = DateTime.now();
-                                Timestamp currentTimestamp = Timestamp.fromDate(now);
+                                DateFormat formatter = DateFormat.yMd().add_jm();
+                                String currentTimestamp = formatter.format(now);
 
                                 mainTickets.add({
                                   'userUid': userId,
@@ -1460,6 +1665,15 @@ class _HomeState extends State<Home> {
                                   'ticketId': ticketId,
                                   'time': currentTimestamp,
                                   'ticketPrice': ticketPrice,
+                                  'CompanyUID': CompanyUid,
+                                });
+
+                                ticketNotifications.add({
+                                  'userUid': userId,
+                                  'title': "حجز تذكرة",
+                                  'description':
+                                      "حجز تذكرة فى فعالية $title برقم $ticketId وتبدأ الفعالية فى $startingDate وتنتهى في $endingDate",
+                                  'time': currentTimestamp,
                                   'CompanyUID': CompanyUid,
                                 });
                               }
